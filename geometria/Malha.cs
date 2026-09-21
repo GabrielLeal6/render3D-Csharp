@@ -1,11 +1,10 @@
 using System.Globalization;
-using System.Security.Cryptography.X509Certificates;
 
 public struct Malha{
 
     public Triangulo[] triangulos {get; private set;}
     int qtTriangulos;
-    public Vertice[] vertices {get; private set;}
+    public Ponto3D[] vertices {get; private set;}
     int qtVertices;
 
     public Malha(string path){
@@ -15,7 +14,7 @@ public struct Malha{
                 qtVertices = Int32.Parse(line[0]);
                 qtTriangulos = Int32.Parse(line[1]);
 
-                vertices = new Vertice[qtVertices];
+                vertices = new Ponto3D[qtVertices];
                 triangulos = new Triangulo[qtTriangulos];
 
                 for (int i = 0; i < qtVertices; i++){

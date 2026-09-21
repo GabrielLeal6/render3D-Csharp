@@ -9,6 +9,9 @@ public struct Vetor3D{
         Z = z;
         Magnitude = Math.Sqrt((X*X)+(Y*Y)+(Z*Z));
     }
+    public static Vetor3D operator -(Vetor3D a, Vetor3D b){
+        return new Vetor3D(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
+    }
     public static Vetor3D operator *(Vetor3D vetor, double escalar){
         return new Vetor3D(vetor.X * escalar, vetor.Y * escalar, vetor.Z * escalar);
     }
