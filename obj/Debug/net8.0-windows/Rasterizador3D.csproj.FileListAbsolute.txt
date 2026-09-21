@@ -1,0 +1,14 @@
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\bin\Debug\net8.0-windows\Rasterizador3D.exe
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\bin\Debug\net8.0-windows\Rasterizador3D.deps.json
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\bin\Debug\net8.0-windows\Rasterizador3D.runtimeconfig.json
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\bin\Debug\net8.0-windows\Rasterizador3D.dll
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\bin\Debug\net8.0-windows\Rasterizador3D.pdb
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\obj\Debug\net8.0-windows\Rasterizador3D.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\obj\Debug\net8.0-windows\Rasterizador3D.AssemblyInfoInputs.cache
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\obj\Debug\net8.0-windows\Rasterizador3D.AssemblyInfo.cs
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\obj\Debug\net8.0-windows\Rasterizador3D.csproj.CoreCompileInputs.cache
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\obj\Debug\net8.0-windows\Rasterizador3D.dll
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\obj\Debug\net8.0-windows\refint\Rasterizador3D.dll
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\obj\Debug\net8.0-windows\Rasterizador3D.pdb
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\obj\Debug\net8.0-windows\Rasterizador3D.genruntimeconfig.cache
+C:\Users\Noob\Documents\gabriel\code\PGB\projeto\Rasterizador3D\obj\Debug\net8.0-windows\ref\Rasterizador3D.dll
