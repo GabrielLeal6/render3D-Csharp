@@ -99,4 +99,28 @@ public struct Camera{
         return pontos;
     }
 
+    public Pixel[] RenderFrame(Malha malha, Camera cam, int LarguraTela, int AlturaTela){
+        Ponto3D[] pontos = PipelineGrafica(malha, cam, LarguraTela, AlturaTela);
+        Pixel[] frame = new Pixel[LarguraTela * AlturaTela];
+
+        for (int i = 0; i < malha.triangulos.Length; i++){
+            Triangulo triOrd = malha.triangulos[i];
+            double v1y = pontos[triOrd.V1].Y;
+            double v2y = pontos[triOrd.V2].Y;
+            double v3y = pontos[triOrd.V3].Y;
+
+            if (v1y > v2y){
+                (triOrd.V2, triOrd.V1) = (triOrd.V1, triOrd.V2);
+            }
+            if (v1y > v3y){
+                (triOrd.V3, triOrd.V1) = (triOrd.V1, triOrd.V3);
+            }
+            if (v2y > v3y){
+                (triOrd.V3, triOrd.V2) = (triOrd.V2, triOrd.V3);
+            }
+        }
+
+        return frame;
+    }
+
 }
