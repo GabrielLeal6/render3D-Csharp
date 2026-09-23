@@ -109,16 +109,19 @@ public struct Camera{
             double v2y = pontos[triOrd.V2].Y;
             double v3y = pontos[triOrd.V3].Y;
 
-            if (v1y > v2y){
-                (triOrd.V2, triOrd.V1) = (triOrd.V1, triOrd.V2);
-            }
-            if (v1y > v3y){
-                (triOrd.V3, triOrd.V1) = (triOrd.V1, triOrd.V3);
-            }
-            if (v2y > v3y){
-                (triOrd.V3, triOrd.V2) = (triOrd.V2, triOrd.V3);
-            }
+            Ponto3D p1 = pontos[triOrd.V1];
+            Ponto3D p2 = pontos[triOrd.V2];
+            Ponto3D p3 = pontos[triOrd.V3];
+
+            if (v1y > v2y){(p2, p1) = (p1, p2);}
+            if (v1y > v3y){(p3, p1) = (p1, p3);}
+            if (v2y > v3y){(p3, p2) = (p2, p3);}
+
+            
+
         }
+        
+        
 
         return frame;
     }
