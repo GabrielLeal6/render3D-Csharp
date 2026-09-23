@@ -1,5 +1,5 @@
 public struct Pixel{
-    byte R, G, B;
+    public byte R, G, B;
 
     public Pixel(Byte r, Byte g, Byte b){
         R = r; 

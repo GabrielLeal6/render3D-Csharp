@@ -89,7 +89,7 @@ public struct Camera{
     }
 
     public Ponto3D[] PipelineGrafica(Malha malha, Camera cam, int LarguraTela, int AlturaTela){
-        Ponto3D[] pontos = malha.vertices;
+        Ponto3D[] pontos = (Ponto3D[])malha.vertices.Clone();
 
         pontos = ConverterCoordMundoVista(pontos, cam);
         pontos = ProjetarPerspectiva(pontos, cam);
@@ -105,19 +105,51 @@ public struct Camera{
 
         for (int i = 0; i < malha.triangulos.Length; i++){
             Triangulo triOrd = malha.triangulos[i];
-            double v1y = pontos[triOrd.V1].Y;
-            double v2y = pontos[triOrd.V2].Y;
-            double v3y = pontos[triOrd.V3].Y;
 
             Ponto3D p1 = pontos[triOrd.V1];
             Ponto3D p2 = pontos[triOrd.V2];
             Ponto3D p3 = pontos[triOrd.V3];
 
-            if (v1y > v2y){(p2, p1) = (p1, p2);}
-            if (v1y > v3y){(p3, p1) = (p1, p3);}
-            if (v2y > v3y){(p3, p2) = (p2, p3);}
+            if (p1.Y > p2.Y){(p2, p1) = (p1, p2);}
+            if (p1.Y > p3.Y){(p3, p1) = (p1, p3);}
+            if (p2.Y > p3.Y){(p3, p2) = (p2, p3);}
 
+            double taxaCurta; if (p1.Y - p2.Y != 0){taxaCurta = (p1.X - p2.X)/(p1.Y - p2.Y);} else{taxaCurta = 0;}
+            double taxaLonga; if (p3.Y - p1.Y != 0){taxaLonga = (p3.X - p1.X)/(p3.Y - p1.Y);} else{taxaLonga = 0;}
             
+            double currentX1 = p1.X;
+            double currentX2 = p1.X;
+
+            for (int y = (int)p1.Y; y < (int)p2.Y; y++){
+                
+                int xMax = (int)Math.Max(currentX1, currentX2);
+                int xMin = (int)Math.Min(currentX1, currentX2);
+                
+                for (int j = (int)xMin; j < xMax; j++){
+                    if(j >= 0 && j < LarguraTela && y >= 0 && y < LarguraTela){
+                        frame[j + LarguraTela * y] = new(255,255,255);
+                    }
+                }
+                currentX1 += taxaCurta;
+                currentX2 += taxaLonga;
+            }
+
+            if (p2.Y - p3.Y != 0){taxaCurta = (p2.X - p3.X)/(p2.Y - p3.Y);} else{taxaCurta = 0;}
+            currentX1 = p2.X;
+
+            for (int y = (int)p2.Y; y < (int)p3.Y; y++){
+                
+                int xMax = (int)Math.Max(currentX1, currentX2);
+                int xMin = (int)Math.Min(currentX1, currentX2);
+
+                for (int j = (int)xMin; j <= xMax; j++){
+                    if(j >= 0 && j < LarguraTela && y >= 0 && y < LarguraTela){
+                        frame[j + LarguraTela * y] = new(255,255,255);
+                    }
+                }
+                currentX1 += taxaCurta;
+                currentX2 += taxaLonga;
+            }
 
         }
         
