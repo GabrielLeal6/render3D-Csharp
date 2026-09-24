@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Rasterizador3D")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a922b2565a9cd30d5dcfe70b379e240b5c637233")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0f74230100afcdfd0dee19e2f3bf0a856b73f446")]
 [assembly: System.Reflection.AssemblyProductAttribute("Rasterizador3D")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Rasterizador3D")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

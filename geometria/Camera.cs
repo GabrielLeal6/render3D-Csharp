@@ -126,7 +126,7 @@ public struct Camera{
                 int xMin = (int)Math.Min(currentX1, currentX2);
                 
                 for (int j = (int)xMin; j < xMax; j++){
-                    if(j >= 0 && j < LarguraTela && y >= 0 && y < LarguraTela){
+                    if(j >= 0 && j < LarguraTela && y >= 0 && y < AlturaTela){
                         frame[j + LarguraTela * y] = new(255,255,255);
                     }
                 }
@@ -143,7 +143,7 @@ public struct Camera{
                 int xMin = (int)Math.Min(currentX1, currentX2);
 
                 for (int j = (int)xMin; j <= xMax; j++){
-                    if(j >= 0 && j < LarguraTela && y >= 0 && y < LarguraTela){
+                    if(j >= 0 && j < LarguraTela && y >= 0 && y < AlturaTela){
                         frame[j + LarguraTela * y] = new(255,255,255);
                     }
                 }
