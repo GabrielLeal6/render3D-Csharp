@@ -99,63 +99,112 @@ public struct Camera{
         return pontos;
     }
 
-    public Pixel[] RenderFrame(Malha malha, Camera cam, int LarguraTela, int AlturaTela){
-        Ponto3D[] pontos = PipelineGrafica(malha, cam, LarguraTela, AlturaTela);
-        Pixel[] frame = new Pixel[LarguraTela * AlturaTela];
-
-        for (int i = 0; i < malha.triangulos.Length; i++){
-            Triangulo triOrd = malha.triangulos[i];
-
-            Ponto3D p1 = pontos[triOrd.V1];
-            Ponto3D p2 = pontos[triOrd.V2];
-            Ponto3D p3 = pontos[triOrd.V3];
-
-            if (p1.Y > p2.Y){(p2, p1) = (p1, p2);}
-            if (p1.Y > p3.Y){(p3, p1) = (p1, p3);}
-            if (p2.Y > p3.Y){(p3, p2) = (p2, p3);}
-
-            double taxaCurta; if (p1.Y - p2.Y != 0){taxaCurta = (p1.X - p2.X)/(p1.Y - p2.Y);} else{taxaCurta = 0;}
-            double taxaLonga; if (p3.Y - p1.Y != 0){taxaLonga = (p3.X - p1.X)/(p3.Y - p1.Y);} else{taxaLonga = 0;}
-            
-            double currentX1 = p1.X;
-            double currentX2 = p1.X;
-
-            for (int y = (int)p1.Y; y < (int)p2.Y; y++){
-                
-                int xMax = (int)Math.Max(currentX1, currentX2);
-                int xMin = (int)Math.Min(currentX1, currentX2);
-                
-                for (int j = (int)xMin; j < xMax; j++){
-                    if(j >= 0 && j < LarguraTela && y >= 0 && y < AlturaTela){
-                        frame[j + LarguraTela * y] = new(255,255,255);
-                    }
-                }
-                currentX1 += taxaCurta;
-                currentX2 += taxaLonga;
-            }
-
-            if (p2.Y - p3.Y != 0){taxaCurta = (p2.X - p3.X)/(p2.Y - p3.Y);} else{taxaCurta = 0;}
-            currentX1 = p2.X;
-
-            for (int y = (int)p2.Y; y < (int)p3.Y; y++){
-                
-                int xMax = (int)Math.Max(currentX1, currentX2);
-                int xMin = (int)Math.Min(currentX1, currentX2);
-
-                for (int j = (int)xMin; j <= xMax; j++){
-                    if(j >= 0 && j < LarguraTela && y >= 0 && y < AlturaTela){
-                        frame[j + LarguraTela * y] = new(255,255,255);
-                    }
-                }
-                currentX1 += taxaCurta;
-                currentX2 += taxaLonga;
-            }
-
-        }
-        
-        
-
-        return frame;
+    public Pixel[] RenderFrame(Malha malha, Camera cam, int LarguraTela, int AlturaTela)
+{
+    Ponto3D[] pontos = PipelineGrafica(malha, cam, LarguraTela, AlturaTela);
+    Pixel[] frame = new Pixel[LarguraTela * AlturaTela];
+    
+    double[] zBuffer = new double[LarguraTela * AlturaTela];
+    for (int i = 0; i < zBuffer.Length; i++) {
+        zBuffer[i] = double.MaxValue;
     }
+
+    for (int i = 0; i < malha.triangulos.Length; i++)
+    {
+        Triangulo triOrd = malha.triangulos[i];
+
+        Ponto3D p1 = pontos[triOrd.V1];
+        Ponto3D p2 = pontos[triOrd.V2];
+        Ponto3D p3 = pontos[triOrd.V3];
+
+        // Ordenação vertical (p1 no topo, p3 na base)
+        if (p1.Y > p2.Y) { (p2, p1) = (p1, p2); }
+        if (p1.Y > p3.Y) { (p3, p1) = (p1, p3); }
+        if (p2.Y > p3.Y) { (p3, p2) = (p2, p3); }
+
+        // Taxas de variação vertical para X e Z
+        double taxaCurta  = (p1.Y - p2.Y != 0) ? (p1.X - p2.X) / (p1.Y - p2.Y) : 0;
+        double taxaLonga  = (p3.Y - p1.Y != 0) ? (p3.X - p1.X) / (p3.Y - p1.Y) : 0;
+
+        double taxaCurtaZ = (p1.Y - p2.Y != 0) ? (p1.Z - p2.Z) / (p1.Y - p2.Y) : 0;
+        double taxaLongaZ = (p3.Y - p1.Y != 0) ? (p3.Z - p1.Z) / (p3.Y - p1.Y) : 0;
+
+        double currentX1 = p1.X; // Aresta curta
+        double currentX2 = p1.X; // Aresta longa
+
+        double currentZ1 = p1.Z;
+        double currentZ2 = p1.Z;
+
+        // Metade Superior (p1 até p2)
+        for (int y = (int)p1.Y; y < (int)p2.Y; y++){
+            double xEsq = currentX1 < currentX2 ? currentX1 : currentX2;
+            double xDir = currentX1 < currentX2 ? currentX2 : currentX1;
+            double zEsq = currentX1 < currentX2 ? currentZ1 : currentZ2;
+            double zDir = currentX1 < currentX2 ? currentZ2 : currentZ1;
+
+            // Declive horizontal de Z
+            double decliveHorZ = (xDir - xEsq != 0) ? (zDir - zEsq) / (xDir - xEsq) : 0;
+
+            for (int j = (int)xEsq; j <= (int)xDir; j++)
+            {
+                if (j >= 0 && j < LarguraTela && y >= 0 && y < AlturaTela)
+                {
+                    int indice = j + LarguraTela * y;
+                    double currentZ = zEsq + (j - (int)xEsq) * decliveHorZ;
+
+                    // Teste de profundidade Z-Buffer
+                    if (currentZ < zBuffer[indice])
+                    {
+                        zBuffer[indice] = currentZ;
+                        frame[indice] = new Pixel(255, 255, 255);
+                    }
+                }
+            }
+
+            currentX1 += taxaCurta;
+            currentX2 += taxaLonga;
+            currentZ1 += taxaCurtaZ;
+            currentZ2 += taxaLongaZ;
+        }
+
+        // Metade Inferior (p2 até p3)
+        taxaCurta  = (p2.Y - p3.Y != 0) ? (p2.X - p3.X) / (p2.Y - p3.Y) : 0;
+        taxaCurtaZ = (p2.Y - p3.Y != 0) ? (p2.Z - p3.Z) / (p2.Y - p3.Y) : 0;
+        
+        currentX1 = p2.X;
+        currentZ1 = p2.Z;
+
+        for (int y = (int)p2.Y; y < (int)p3.Y; y++){
+            double xEsq = currentX1 < currentX2 ? currentX1 : currentX2;
+            double xDir = currentX1 < currentX2 ? currentX2 : currentX1;
+            double zEsq = currentX1 < currentX2 ? currentZ1 : currentZ2;
+            double zDir = currentX1 < currentX2 ? currentZ2 : currentZ1;
+
+            double decliveHorZ = (xDir - xEsq != 0) ? (zDir - zEsq) / (xDir - xEsq) : 0;
+
+            for (int j = (int)xEsq; j <= (int)xDir; j++){
+                if (j >= 0 && j < LarguraTela && y >= 0 && y < AlturaTela)
+                {
+                    int indice = j + LarguraTela * y;
+                    double currentZ = zEsq + (j - (int)xEsq) * decliveHorZ;
+
+                    // Teste de profundidade Z-Buffer
+                    if (currentZ < zBuffer[indice])
+                    {
+                        zBuffer[indice] = currentZ;
+                        frame[indice] = new Pixel(255, 255, 255);
+                    }
+                }
+            }
+
+            currentX1 += taxaCurta;
+            currentX2 += taxaLonga;
+            currentZ1 += taxaCurtaZ;
+            currentZ2 += taxaLongaZ;
+        }
+    }
+
+    return frame;
+}
 
 }
