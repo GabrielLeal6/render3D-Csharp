@@ -68,7 +68,7 @@ public partial class Form1 : Form
 
     private void AtualizarQuadro(object sender, KeyEventArgs e)
     {
-        camera.load("camera.txt");
+        camera.Load("camera.txt");
         exemplo = new Malha(objetoPath);
 
         Renderizar();

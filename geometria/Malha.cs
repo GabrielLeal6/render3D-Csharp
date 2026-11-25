@@ -28,8 +28,7 @@ public struct Malha
 
     public Malha(string path)
     {
-        try
-        {
+        try{
             using (StreamReader sr = new(path))
             {
                 string[] line = sr.ReadLine().Split();
@@ -56,6 +55,8 @@ public struct Malha
                     Triangulos[i] = new(v1, v2, v3);
                 }
             }
+
+            CalcularNormais();
         }
         catch (Exception e)
         {
@@ -63,7 +64,7 @@ public struct Malha
             Console.WriteLine(e.Message);
         }
     }
-    public void printMalha()
+    public readonly void PrintMalha()
     {
         Console.WriteLine($"{qtVertices} {qtTriangulos}");
         for (int i = 0; i < qtVertices; i++)
