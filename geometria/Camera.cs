@@ -116,114 +116,103 @@ public struct Camera
     }
 
     private static void RasterizarSecao(
-    int yInicio, int yFim,
-    ref double currentX1, double taxaX1,
-    ref double currentX2, double taxaX2,
-    ref double currentZ1, double taxaZ1,
-    ref double currentZ2, double taxaZ2,
-    Pixel[] frame, double[] zBuffer, int largura, int altura)
+        int yInicio, int yFim,ref VerticeScanline current1, VerticeScanline taxa1,
+        ref VerticeScanline current2, VerticeScanline taxa2,Camera cam, Iluminacao luz,
+        Pixel[] frame, double[] zBuffer, int largura, int altura
+    )
     {
         for (int y = yInicio; y < yFim; y++)
         {
-            double xEsq = currentX1 < currentX2 ? currentX1 : currentX2;
-            double xDir = currentX1 < currentX2 ? currentX2 : currentX1;
-            double zEsq = currentX1 < currentX2 ? currentZ1 : currentZ2;
-            double zDir = currentX1 < currentX2 ? currentZ2 : currentZ1;
+            VerticeScanline vEsq = current1.Tela.X < current2.Tela.X ? current1 : current2;
+            VerticeScanline vDir = current1.Tela.X < current2.Tela.X ? current2 : current1;
 
-            double decliveHorZ = (xDir - xEsq != 0) ? (zDir - zEsq) / (xDir - xEsq) : 0;
+            double dx = vDir.Tela.X - vEsq.Tela.X;
+            VerticeScanline decliveHor = (dx != 0) ? (vDir - vEsq) * (1.0 / dx) : default;
+            VerticeScanline atual = vEsq;
 
-            for (int j = (int)xEsq; j <= (int)xDir; j++)
+            for (int j = (int)vEsq.Tela.X; j <= (int)vDir.Tela.X; j++)
             {
                 if (j >= 0 && j < largura && y >= 0 && y < altura)
                 {
                     int indice = j + largura * y;
-                    double currentZ = zEsq + (j - (int)xEsq) * decliveHorZ;
 
-                    if (currentZ < zBuffer[indice])
+                    if (atual.Tela.Z < zBuffer[indice])
                     {
-                        zBuffer[indice] = currentZ;
-                        frame[indice] = new Pixel(255, 255, 255);
+                        zBuffer[indice] = atual.Tela.Z;
+                        frame[indice] = luz.CalcularPhong(atual.Mundo, atual.Normal, cam.C);
                     }
                 }
+
+                atual += decliveHor;
             }
 
-            currentX1 += taxaX1;
-            currentX2 += taxaX2;
-            currentZ1 += taxaZ1;
-            currentZ2 += taxaZ2;
+            current1 += taxa1;
+            current2 += taxa2;
         }
     }
 
-    private static void RasterizarTriangulo(Ponto3D p1, Ponto3D p2, Ponto3D p3, Pixel[] frame, double[] zBuffer, int largura, int altura)
+    private static void RasterizarTriangulo(
+        VerticeScanline v1, VerticeScanline v2, VerticeScanline v3,
+        Camera cam, Iluminacao luz, Pixel[] frame, double[] zBuffer, int largura, int altura)
     {
-        // Ordenação vertical (p1 no topo, p3 na base)
-        if (p1.Y > p2.Y) (p2, p1) = (p1, p2);
-        if (p1.Y > p3.Y) (p3, p1) = (p1, p3);
-        if (p2.Y > p3.Y) (p3, p2) = (p2, p3);
+        // Ordenação vertical (v1 no topo, v3 na base)
+        if (v1.Tela.Y > v2.Tela.Y) (v2, v1) = (v1, v2);
+        if (v1.Tela.Y > v3.Tela.Y) (v3, v1) = (v1, v3);
+        if (v2.Tela.Y > v3.Tela.Y) (v3, v2) = (v2, v3);
 
-        // Aresta longa (p1 -> p3) mantém a mesma taxa nas duas metades
-        double taxaLongaX = (p3.Y - p1.Y != 0) ? (p3.X - p1.X) / (p3.Y - p1.Y) : 0;
-        double taxaLongaZ = (p3.Y - p1.Y != 0) ? (p3.Z - p1.Z) / (p3.Y - p1.Y) : 0;
+        double dyLongo = v3.Tela.Y - v1.Tela.Y;
+        VerticeScanline taxaLonga = (dyLongo != 0) ? (v3 - v1) * (1.0 / dyLongo) : default;
+        VerticeScanline current2 = v1;
 
-        double currentX2 = p1.X;
-        double currentZ2 = p1.Z;
-
-        // Metade Superior (p1 até p2)
-        double taxaCurtaX = (p1.Y - p2.Y != 0) ? (p1.X - p2.X) / (p1.Y - p2.Y) : 0;
-        double taxaCurtaZ = (p1.Y - p2.Y != 0) ? (p1.Z - p2.Z) / (p1.Y - p2.Y) : 0;
-        double currentX1 = p1.X;
-        double currentZ1 = p1.Z;
+        // Metade Superior (v1 até v2)
+        double dyCurtoSup = v2.Tela.Y - v1.Tela.Y;
+        VerticeScanline taxaCurta = (dyCurtoSup != 0) ? (v2 - v1) * (1.0 / dyCurtoSup) : default;
+        VerticeScanline current1 = v1;
 
         RasterizarSecao(
-            (int)p1.Y, (int)p2.Y,
-            ref currentX1, taxaCurtaX,
-            ref currentX2, taxaLongaX,
-            ref currentZ1, taxaCurtaZ,
-            ref currentZ2, taxaLongaZ,
-            frame, zBuffer, largura, altura
+            (int)v1.Tela.Y, (int)v2.Tela.Y,
+            ref current1, taxaCurta,
+            ref current2, taxaLonga,
+            cam, luz, frame, zBuffer, largura, altura
         );
 
-        // Metade Inferior (p2 até p3)
-        taxaCurtaX = (p2.Y - p3.Y != 0) ? (p2.X - p3.X) / (p2.Y - p3.Y) : 0;
-        taxaCurtaZ = (p2.Y - p3.Y != 0) ? (p2.Z - p3.Z) / (p2.Y - p3.Y) : 0;
-        currentX1 = p2.X;
-        currentZ1 = p2.Z;
+        // Metade Inferior (v2 até v3)
+        double dyCurtoInf = v3.Tela.Y - v2.Tela.Y;
+        taxaCurta = (dyCurtoInf != 0) ? (v3 - v2) * (1.0 / dyCurtoInf) : default;
+        current1 = v2;
 
         RasterizarSecao(
-            (int)p2.Y, (int)p3.Y,
-            ref currentX1, taxaCurtaX,
-            ref currentX2, taxaLongaX,
-            ref currentZ1, taxaCurtaZ,
-            ref currentZ2, taxaLongaZ,
-            frame, zBuffer, largura, altura
+            (int)v2.Tela.Y, (int)v3.Tela.Y,
+            ref current1, taxaCurta,
+            ref current2, taxaLonga,
+            cam, luz, frame, zBuffer, largura, altura
         );
     }
 
-    private static void RasterizarMalha(Malha malha, Ponto3D[] pontos, Pixel[] frame, double[] zBuffer, int largura, int altura)
+    private static void RasterizarMalha(
+        Malha malha, Ponto3D[] pontos, Camera cam, Iluminacao luz,
+        Pixel[] frame, double[] zBuffer, int largura, int altura)
     {
         for (int i = 0; i < malha.Triangulos.Length; i++)
         {
             Triangulo tri = malha.Triangulos[i];
-            RasterizarTriangulo(
-                pontos[tri.V1],
-                pontos[tri.V2],
-                pontos[tri.V3],
-                frame,
-                zBuffer,
-                largura,
-                altura
-            );
+
+            var v1 = new VerticeScanline(pontos[tri.V1], malha.Vertices[tri.V1], malha.normaisVertices[tri.V1]);
+            var v2 = new VerticeScanline(pontos[tri.V2], malha.Vertices[tri.V2], malha.normaisVertices[tri.V2]);
+            var v3 = new VerticeScanline(pontos[tri.V3], malha.Vertices[tri.V3], malha.normaisVertices[tri.V3]);
+
+            RasterizarTriangulo(v1, v2, v3, cam, luz, frame, zBuffer, largura, altura);
         }
     }
 
-    public readonly Pixel[] RenderFrame(Malha malha, Camera cam, int LarguraTela, int AlturaTela)
+    public readonly Pixel[] RenderFrame(Malha malha, Camera cam, Iluminacao luz, int LarguraTela, int AlturaTela)
     {
         Ponto3D[] pontos = PipelineGrafica(malha, cam, LarguraTela, AlturaTela);
         Pixel[] frame = new Pixel[LarguraTela * AlturaTela];
         double[] zBuffer = new double[LarguraTela * AlturaTela];
         Array.Fill(zBuffer, double.MaxValue);
 
-        RasterizarMalha(malha, pontos, frame, zBuffer, LarguraTela, AlturaTela);
+        RasterizarMalha(malha, pontos, cam, luz, frame, zBuffer, LarguraTela, AlturaTela);
 
         return frame;
     }

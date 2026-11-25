@@ -7,6 +7,7 @@ public partial class Form1 : Form
     PictureBox picturebox;
     Camera camera;
     Malha exemplo;
+    Iluminacao iluminacao;
     Bitmap canvas;
     String objetoPath;
 
@@ -15,7 +16,7 @@ public partial class Form1 : Form
         InitializeComponent();
 
         this.ClientSize = new Size(LarguraTela, AlturaTela);
-        this.Text = "Rasterizador 3D - 1ª VA";
+        this.Text = "Rasterizador 3D - 2ª VA";
 
         picturebox = new PictureBox();
         picturebox.Dock = DockStyle.Fill;
@@ -25,6 +26,7 @@ public partial class Form1 : Form
         canvas = new Bitmap(LarguraTela, AlturaTela);
         exemplo = new Malha(objetoPath);
         camera = new Camera("camera.txt");
+        iluminacao = new Iluminacao("iluminacao.txt");
 
         this.KeyDown += AtualizarQuadro;
 
@@ -36,6 +38,7 @@ public partial class Form1 : Form
         Pixel[] frame = camera.RenderFrame(
             exemplo,
             camera,
+            iluminacao,
             LarguraTela,
             AlturaTela
         );
@@ -69,6 +72,7 @@ public partial class Form1 : Form
     private void AtualizarQuadro(object sender, KeyEventArgs e)
     {
         camera.Load("camera.txt");
+        iluminacao.Load("iluminacao.txt");
         exemplo = new Malha(objetoPath);
 
         Renderizar();

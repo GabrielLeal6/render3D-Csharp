@@ -20,74 +20,82 @@ public class Iluminacao
     {
         try
         {
-            using (StreamReader sr = new StreamReader(path))
+            string[] lines = File.ReadAllLines(path)
+                .Select(l => l.Trim())
+                .Where(l => !string.IsNullOrEmpty(l))
+                .ToArray();
+
+            for (int i = 0; i < lines.Length; i++)
             {
-                string? line;
-                while ((line = sr.ReadLine()) != null)
+                string[] parts = lines[i].Split(new char[] { '=', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 0) continue;
+
+                bool temRotulo = char.IsLetter(parts[0][0]);
+                string chave = temRotulo ? parts[0].ToLower() : i.ToString();
+                int offset = temRotulo ? 1 : 0;
+
+                switch (chave)
                 {
-                    line = line.Trim();
-                    if (string.IsNullOrEmpty(line)) continue;
+                    case "iamb":
+                    case "0":
+                        Iamb = new CorRGB(
+                            double.Parse(parts[offset], CultureInfo.InvariantCulture),
+                            double.Parse(parts[offset + 1], CultureInfo.InvariantCulture),
+                            double.Parse(parts[offset + 2], CultureInfo.InvariantCulture)
+                        );
+                        break;
 
-                    string[] parts = line.Split(new char[] { '=', ' ' }, StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length < 2) continue;
+                    case "ka":
+                    case "1":
+                        Ka = double.Parse(parts[offset], CultureInfo.InvariantCulture);
+                        break;
 
-                    string chave = parts[0].ToLower();
+                    case "il":
+                    case "2":
+                        Il = new CorRGB(
+                            double.Parse(parts[offset], CultureInfo.InvariantCulture),
+                            double.Parse(parts[offset + 1], CultureInfo.InvariantCulture),
+                            double.Parse(parts[offset + 2], CultureInfo.InvariantCulture)
+                        );
+                        break;
 
-                    switch (chave)
-                    {
-                        case "iamb":
-                            Iamb = new CorRGB(
-                                double.Parse(parts[1], CultureInfo.InvariantCulture),
-                                double.Parse(parts[2], CultureInfo.InvariantCulture),
-                                double.Parse(parts[3], CultureInfo.InvariantCulture)
-                            );
-                            break;
+                    case "pl":
+                    case "3":
+                        Pl = new Ponto3D(
+                            double.Parse(parts[offset], CultureInfo.InvariantCulture),
+                            double.Parse(parts[offset + 1], CultureInfo.InvariantCulture),
+                            double.Parse(parts[offset + 2], CultureInfo.InvariantCulture)
+                        );
+                        break;
 
-                        case "ka":
-                            Ka = double.Parse(parts[1], CultureInfo.InvariantCulture);
-                            break;
+                    case "kd":
+                    case "4":
+                        Kd = new Vetor3D(
+                            double.Parse(parts[offset], CultureInfo.InvariantCulture),
+                            double.Parse(parts[offset + 1], CultureInfo.InvariantCulture),
+                            double.Parse(parts[offset + 2], CultureInfo.InvariantCulture)
+                        );
+                        break;
 
-                        case "il":
-                            Il = new CorRGB(
-                                double.Parse(parts[1], CultureInfo.InvariantCulture),
-                                double.Parse(parts[2], CultureInfo.InvariantCulture),
-                                double.Parse(parts[3], CultureInfo.InvariantCulture)
-                            );
-                            break;
+                    case "od":
+                    case "5":
+                        Od = new Vetor3D(
+                            double.Parse(parts[offset], CultureInfo.InvariantCulture),
+                            double.Parse(parts[offset + 1], CultureInfo.InvariantCulture),
+                            double.Parse(parts[offset + 2], CultureInfo.InvariantCulture)
+                        );
+                        break;
 
-                        case "pl":
-                            Pl = new Ponto3D(
-                                double.Parse(parts[1], CultureInfo.InvariantCulture),
-                                double.Parse(parts[2], CultureInfo.InvariantCulture),
-                                double.Parse(parts[3], CultureInfo.InvariantCulture)
-                            );
-                            break;
+                    case "ks":
+                    case "6":
+                        Ks = double.Parse(parts[offset], CultureInfo.InvariantCulture);
+                        break;
 
-                        case "kd":
-                            Kd = new Vetor3D(
-                                double.Parse(parts[1], CultureInfo.InvariantCulture),
-                                double.Parse(parts[2], CultureInfo.InvariantCulture),
-                                double.Parse(parts[3], CultureInfo.InvariantCulture)
-                            );
-                            break;
-
-                        case "od":
-                            Od = new Vetor3D(
-                                double.Parse(parts[1], CultureInfo.InvariantCulture),
-                                double.Parse(parts[2], CultureInfo.InvariantCulture),
-                                double.Parse(parts[3], CultureInfo.InvariantCulture)
-                            );
-                            break;
-
-                        case "ks":
-                            Ks = double.Parse(parts[1], CultureInfo.InvariantCulture);
-                            break;
-
-                        case "eta":
-                        case "q":
-                            Eta = double.Parse(parts[1], CultureInfo.InvariantCulture);
-                            break;
-                    }
+                    case "eta":
+                    case "η":
+                    case "7":
+                        Eta = double.Parse(parts[offset], CultureInfo.InvariantCulture);
+                        break;
                 }
             }
         }
@@ -95,5 +103,44 @@ public class Iluminacao
         {
             Console.WriteLine("Erro ao ler o arquivo de iluminação: " + e.Message);
         }
+    }
+    public Pixel CalcularPhong(Ponto3D pontoMundo, Vetor3D normal, Ponto3D posCamera)
+    {
+        Vetor3D N = normal.Normalizar();
+        Vetor3D L = (Pl - pontoMundo).Normalizar();
+        Vetor3D V = (posCamera - pontoMundo).Normalizar();
+
+        double nDotL = Vetor3D.produtoEscalar(N, L);
+
+        // Componente Ambiente
+        double r = Iamb.R * Ka;
+        double g = Iamb.G * Ka;
+        double b = Iamb.B * Ka;
+
+        if (nDotL > 0)
+        {
+            // Componente Difusa
+            r += Il.R * Kd.X * Od.X * nDotL;
+            g += Il.G * Kd.Y * Od.Y * nDotL;
+            b += Il.B * Kd.Z * Od.Z * nDotL;
+
+            // Componente Especular: R = 2 * (N . L) * N - L
+            Vetor3D R = ((N * (2.0 * nDotL)) - L).Normalizar();
+            double rDotV = Vetor3D.produtoEscalar(R, V);
+
+            if (rDotV > 0)
+            {
+                double fatorEspecular = Ks * Math.Pow(rDotV, Eta);
+                r += Il.R * fatorEspecular;
+                g += Il.G * fatorEspecular;
+                b += Il.B * fatorEspecular;
+            }
+        }
+
+        return new Pixel(
+            (byte)Math.Clamp(r, 0, 255),
+            (byte)Math.Clamp(g, 0, 255),
+            (byte)Math.Clamp(b, 0, 255)
+        );
     }
 }
