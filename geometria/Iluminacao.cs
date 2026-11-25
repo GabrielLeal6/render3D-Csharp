@@ -84,7 +84,7 @@ public class Iluminacao
                             break;
 
                         case "eta":
-                        case "η":
+                        case "q":
                             Eta = double.Parse(parts[1], CultureInfo.InvariantCulture);
                             break;
                     }

@@ -89,7 +89,7 @@ public struct Camera{
     }
 
     public Ponto3D[] PipelineGrafica(Malha malha, Camera cam, int LarguraTela, int AlturaTela){
-        Ponto3D[] pontos = (Ponto3D[])malha.vertices.Clone();
+        Ponto3D[] pontos = (Ponto3D[])malha.Vertices.Clone();
 
         pontos = ConverterCoordMundoVista(pontos, cam);
         pontos = ProjetarPerspectiva(pontos, cam);
@@ -109,9 +109,9 @@ public struct Camera{
         zBuffer[i] = double.MaxValue;
     }
 
-    for (int i = 0; i < malha.triangulos.Length; i++)
+    for (int i = 0; i < malha.Triangulos.Length; i++)
     {
-        Triangulo triOrd = malha.triangulos[i];
+        Triangulo triOrd = malha.Triangulos[i];
 
         Ponto3D p1 = pontos[triOrd.V1];
         Ponto3D p2 = pontos[triOrd.V2];

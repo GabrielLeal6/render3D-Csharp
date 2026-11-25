@@ -12,6 +12,9 @@ public struct Vetor3D{
     public static Vetor3D operator -(Vetor3D a, Vetor3D b){
         return new Vetor3D(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
     }
+    public static Vetor3D operator +(Vetor3D a, Vetor3D b){
+        return new Vetor3D(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+    }
     public static Vetor3D operator *(Vetor3D vetor, double escalar){
         return new Vetor3D(vetor.X * escalar, vetor.Y * escalar, vetor.Z * escalar);
     }
@@ -21,8 +24,17 @@ public struct Vetor3D{
     public static double produtoEscalar(Vetor3D a, Vetor3D b){
         return a.X * b.X + a.Y * b.Y + a.Z * b.Z;
     }
-    public Vetor3D normalizar(){
+    public readonly Vetor3D Normalizar(){
+        if (Magnitude == 0){return new(0,0,0);} // Proteção contra NaN
         return new(X/Magnitude, Y/Magnitude, Z/Magnitude);
+    }
+
+    public static Vetor3D[] Normalizar(Vetor3D[] vetores){
+        for (int i = 0; i < vetores.Length; i++)
+        {
+            vetores[i] = vetores[i].Normalizar();
+        }
+        return vetores;
     }
 
 }
